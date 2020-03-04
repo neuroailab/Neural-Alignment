@@ -1,6 +1,6 @@
 # Two Routes to Scalable Credit Assignment without Weight Symmetry
 
-**Daniel Kunin\*, Aran Nayebi\*, Javier Sagastuy-Brena\*, Surya Ganguli, Jon Bloom, Daniel L. K. Yamins**
+**Daniel Kunin\*, Aran Nayebi\*, Javier Sagastuy-Brena\*, Surya Ganguli, Jonathan M. Bloom, Daniel L. K. Yamins**
 
 [Preprint](https://arxiv.org/abs/2003.01513)
 
@@ -163,7 +163,7 @@ python test.py validate --gpu=6 --dbname=validate --port=29029 --model=resnet18 
 ```
 @article{kunin2020routes,
     title={Two Routes to Scalable Credit Assignment without Weight Symmetry},
-    author={Daniel Kunin and Aran Nayebi and Javier Sagastuy-Brena and Surya Ganguli and Jon Bloom and Daniel L. K. Yamins},
+    author={Daniel Kunin and Aran Nayebi and Javier Sagastuy-Brena and Surya Ganguli and Jonathan M. Bloom and Daniel L. K. Yamins},
     year={2020},
     eprint={2003.01513},
     archivePrefix={arXiv},
