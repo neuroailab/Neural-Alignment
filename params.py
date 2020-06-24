@@ -269,11 +269,14 @@ class Params:
             self.params['model_params']['resnet_size'] = (int)(FLAGS.model.split('resnet')[-1])
             self.params['model_params']['use_v2'] = FLAGS.use_resnet_v2
             self.params['model_params']['bn_trainable'] = FLAGS.bn_trainable
+            print("regularize_weights_via_model", FLAGS.regularize_weights_via_model)
+            print("regularize_weights_via_model (type)", type(FLAGS.regularize_weights_via_model))
+            self.params['model_params']['regularize_weights'] = FLAGS.regularize_weights_via_model
 
         self.params['save_params']['exp_id'] = str(FLAGS.alignment)
         self.params['save_params']['exp_id'] += FLAGS.exp_id_suffix
 
-        # Common aligmnet kwargs used by the Alignment parent class
+        # Common alignment kwargs used by the Alignment parent class
         self.alignment_kwargs = {
             'update_forward': FLAGS.update_forward,
             'input_distribution': FLAGS.input_distribution,
@@ -410,14 +413,17 @@ class Params:
         optimizer_params = self._set_optimizer(optimizer_class=FLAGS.optimizer)
         if FLAGS.use_noisy_global_opt:
             print("Using NoisyOptimizer on the global optimizer")
+            apply_filter = 'backward' if FLAGS.alignment == 'kolen_pollack' else ''
             if FLAGS.noisy_global_opt_distribution is not None:
                 noisy_global_opt = build_noisy_optimizer(optimizer_params['optimizer_class'],
                                                          FLAGS.noisy_global_opt_distribution,
-                                                         FLAGS.noisy_global_opt_variance)
+                                                         FLAGS.noisy_global_opt_variance,
+                                                         apply_filter=apply_filter)
             else:
                 noisy_global_opt = build_noisy_optimizer(optimizer_params['optimizer_class'],
                                                          FLAGS.noisy_opt_distribution,
-                                                         FLAGS.noisy_opt_variance)
+                                                         FLAGS.noisy_opt_variance,
+                                                         apply_filter=apply_filter)
             optimizer_params.update({'optimizer_class': noisy_global_opt})
         self.params['optimizer_params'].update(optimizer_params)
 
@@ -433,14 +439,17 @@ class Params:
             alignment_optimizer_params = self._set_optimizer(optimizer_class=FLAGS.alignment_optimizer)
             if FLAGS.use_noisy_alignment_opt:
                 print("Using NoisyOptimizer on the alignment optimizer")
+                apply_filter = 'backward' if FLAGS.alignment == 'kolen_pollack' else ''
                 if FLAGS.noisy_alignment_opt_distribution is not None:
                     noisy_alignment_opt = build_noisy_optimizer(alignment_optimizer_params['optimizer_class'],
                                                                 FLAGS.noisy_alignment_opt_distribution,
-                                                                FLAGS.noisy_alignment_opt_variance)
+                                                                FLAGS.noisy_alignment_opt_variance,
+                                                                apply_filter=apply_filter)
                 else:
                     noisy_alignment_opt = build_noisy_optimizer(alignment_optimizer_params['optimizer_class'],
                                                                 FLAGS.noisy_opt_distribution,
-                                                                FLAGS.noisy_opt_variance)
+                                                                FLAGS.noisy_opt_variance,
+                                                                apply_filter=apply_filter)
                 alignment_optimizer_params.update({'optimizer_class': noisy_alignment_opt})
             for k in ['optimizer_class', 'optimizer_kwargs']:
                 if k == 'optimizer_class':

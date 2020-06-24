@@ -395,6 +395,11 @@ flags.DEFINE_string(
          '* tanh\n'
          '* relu\n')
 
+flags.DEFINE_bool(
+    'regularize_weights_via_model',
+    default=True,
+    help='Whether to add weight decay on the model function')
+
 #### Alignment flags
 flags.DEFINE_string(
     'alignment',

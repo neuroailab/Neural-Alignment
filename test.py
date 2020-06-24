@@ -1,5 +1,5 @@
 '''
-Validates neural-alignment models
+Runs validations on neural-alignment models
 '''
 
 from __future__ import absolute_import
@@ -10,21 +10,23 @@ import absl.logging as _logging
 
 import os
 import tensorflow as tf
+import numpy as np
 
 from tfutils import base
 
 import flags
 from params import Params
-import numpy as np
 
 FLAGS = flags.FLAGS
 
+# Main test_form_params setup to re-validate a checkpointed model
 def validate(test_params):
     print("Validating only")
     print("All params: ")
     print(test_params)
     base.test_from_params(**test_params)
 
+# Main test_form_params setup to re-validate a checkpointed model on TPU
 def validate_tpu(test_params):
     print("Validating only")
     print("All params: ")
@@ -82,3 +84,4 @@ def main(argv):
 
 if __name__ == '__main__':
     tf.app.run(main)
+

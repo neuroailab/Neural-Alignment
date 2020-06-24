@@ -14,6 +14,7 @@ def google_resnet_func(inputs,
                        gpu_mode=True,
                        return_endpoints=False,
                        bn_trainable=True,
+                       regularize_weights=True,
                        **kwargs):
 
     params = OrderedDict()
@@ -26,13 +27,15 @@ def google_resnet_func(inputs,
         network = resnet_v2(
                 resnet_size=resnet_size, num_classes=num_classes,
                 alignment=alignment, tf_layers=tf_layers,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable,
+                regularize_weights=regularize_weights)
     else:
         print("using v1 resnet-", resnet_size, " as model")
         network = resnet_v1(
                 resnet_depth=resnet_size, num_classes=num_classes,
                 alignment=alignment, tf_layers=tf_layers,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable,
+                regularize_weights=regularize_weights)
     print("gpu_mode set to: {}".format(gpu_mode))
     if gpu_mode:
         print('inputs shape', inputs['images'].shape)
