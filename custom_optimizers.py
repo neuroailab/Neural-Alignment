@@ -288,9 +288,10 @@ class RAdamOptimizer(optimizer.Optimizer):
         raise NotImplementedError("Sparse gradient updates are not supported.")
 
 
-def build_noisy_optimizer(optimizer_class, 
-                          distribution, 
-                          variance):
+def build_noisy_optimizer(optimizer_class,
+                          distribution,
+                          variance,
+                          apply_filter=''):
     class NoisyOptimizer(optimizer_class):
         def __init__(self,
                      **optimizer_kwargs):
@@ -311,16 +312,22 @@ def build_noisy_optimizer(optimizer_class,
 
         def _apply_dense(self, grad, var):
             update_op = super(NoisyOptimizer, self)._apply_dense(grad, var)
-            noise_op = var.assign_add(self._lr * self._noise(var))
-            all_update_ops = [update_op, noise_op]
-       
+            all_update_ops = [update_op]
+            assert type(apply_filter) is str
+            if apply_filter in var.name:
+                noise_op = var.assign_add(self._lr * self._noise(var))
+                all_update_ops.append(noise_op)
+
             return control_flow_ops.group(*all_update_ops)
 
         def _resource_apply_dense(self, grad, var):
             update_op = super(NoisyOptimizer, self)._resource_apply_dense(grad, var)
-            noise_op = var.assign_add(self._lr * self._noise(var))
-            all_update_ops = [update_op, noise_op]
-            
+            all_update_ops = [update_op]
+            assert type(apply_filter) is str
+            if apply_filter in var.name:
+                noise_op = var.assign_add(self._lr * self._noise(var))
+                all_update_ops.append(noise_op)
+
             return control_flow_ops.group(*all_update_ops)
 
     return NoisyOptimizer

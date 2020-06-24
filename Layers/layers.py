@@ -72,6 +72,7 @@ def Dense(input,
 
     if activation is not None:
         outputs = activation(outputs)
+    tf.identity(outputs, name='dense_out')
 
     utils.stats(forward_kernel, name='weight')
     utils.stats(outputs, name='act')
@@ -164,6 +165,7 @@ def Conv2D(input,
 
     if activation is not None:
         outputs = activation(outputs)
+    tf.identity(outputs, name='conv_out')
 
     utils.stats(forward_kernel, name='weight')
     utils.stats(outputs, name='act')

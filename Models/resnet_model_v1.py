@@ -93,7 +93,8 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides,
                          alignment=None,
                          alignment_relu=False,
                          alignment_batchnorm=True,
-                         tf_layers=False):
+                         tf_layers=False,
+                         regularize_weights=True):
     """Strided 2-D convolution with explicit padding.
 
     The padding is consistent and is based only on `kernel_size`, not on the
@@ -111,6 +112,12 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides,
     if strides > 1:
         inputs = fixed_padding(inputs, kernel_size)
 
+    if regularize_weights:
+        kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-4)
+        bias_regularizer = tf.contrib.layers.l2_regularizer(1e-4)
+    else:
+        kernel_regularizer = None
+        bias_regularizer = None
     if tf_layers:
         return tf.layers.conv2d(
             inputs=inputs,
@@ -120,8 +127,8 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides,
             padding=('SAME' if strides == 1 else 'VALID'),
             use_bias=False,
             kernel_initializer=tf.variance_scaling_initializer(),
-            kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
-            bias_regularizer=tf.contrib.layers.l2_regularizer(1e-4))
+            kernel_regularizer=kernel_regularizer,
+            bias_regularizer=bias_regularizer)
     else:
         return custom_layers.Conv2D(
                 input=inputs,
@@ -131,8 +138,8 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides,
                 padding=('SAME' if strides == 1 else 'VALID'),
                 use_bias=False,
                 kernel_initializer=tf.variance_scaling_initializer(),
-                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
-                bias_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
+                kernel_regularizer=kernel_regularizer,
+                bias_regularizer=bias_regularizer,
                 alignment=alignment,
                 alignment_relu=alignment_relu,
                 alignment_batchnorm=alignment_batchnorm)
@@ -140,7 +147,7 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides,
 
 def residual_block(inputs, filters, is_training, strides,
                    use_projection=False, alignment=None, tf_layers=False,
-                   bn_trainable=True):
+                   bn_trainable=True, regularize_weights=True):
     """Standard building block for residual networks with BN after convolutions.
 
     Args:
@@ -166,7 +173,7 @@ def residual_block(inputs, filters, is_training, strides,
             shortcut = conv2d_fixed_padding(
                     inputs=inputs, filters=filters, kernel_size=1,
                     strides=strides, alignment=alignment, alignment_relu=use_relu,
-                    tf_layers=tf_layers)
+                    tf_layers=tf_layers, regularize_weights=regularize_weights)
             shortcut = batch_norm_relu(shortcut, is_training, relu=use_relu,
                                        bn_trainable=bn_trainable)
     with tf.variable_scope("conv1"):
@@ -174,7 +181,7 @@ def residual_block(inputs, filters, is_training, strides,
         inputs = conv2d_fixed_padding(
                 inputs=inputs, filters=filters, kernel_size=3, strides=strides,
                 alignment=alignment, alignment_relu=use_relu,
-                tf_layers=tf_layers)
+                tf_layers=tf_layers, regularize_weights=regularize_weights)
         inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                  bn_trainable=bn_trainable)
 
@@ -183,7 +190,7 @@ def residual_block(inputs, filters, is_training, strides,
         inputs = conv2d_fixed_padding(
                 inputs=inputs, filters=filters, kernel_size=3, strides=1,
                 alignment=alignment, alignment_relu=use_relu,
-                tf_layers=tf_layers)
+                tf_layers=tf_layers, regularize_weights=regularize_weights)
         inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                  init_zero=True, bn_trainable=bn_trainable)
 
@@ -192,7 +199,7 @@ def residual_block(inputs, filters, is_training, strides,
 
 def bottleneck_block(inputs, filters, is_training, strides,
                      use_projection=False, alignment=None, tf_layers=False,
-                     bn_trainable=True):
+                     bn_trainable=True, regularize_weights=True):
     """Bottleneck block variant for residual networks with BN after convolutions.
 
     Args:
@@ -220,7 +227,7 @@ def bottleneck_block(inputs, filters, is_training, strides,
             shortcut = conv2d_fixed_padding(
                     inputs=inputs, filters=filters_out, kernel_size=1,
                     strides=strides, alignment=alignment, alignment_relu=use_relu,
-                    tf_layers=tf_layers)
+                    tf_layers=tf_layers, regularize_weights=regularize_weights)
             shortcut = batch_norm_relu(shortcut, is_training, relu=use_relu,
                                        bn_trainable=bn_trainable)
 
@@ -229,7 +236,7 @@ def bottleneck_block(inputs, filters, is_training, strides,
         inputs = conv2d_fixed_padding(
                 inputs=inputs, filters=filters, kernel_size=1, strides=1,
                 alignment=alignment, alignment_relu=use_relu,
-                tf_layers=tf_layers)
+                tf_layers=tf_layers, regularize_weights=regularize_weights)
         inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                  bn_trainable=bn_trainable)
 
@@ -238,7 +245,7 @@ def bottleneck_block(inputs, filters, is_training, strides,
         inputs = conv2d_fixed_padding(
                 inputs=inputs, filters=filters, kernel_size=3, strides=strides,
                 alignment=alignment, alignment_relu=use_relu,
-                tf_layers=tf_layers)
+                tf_layers=tf_layers, regularize_weights=regularize_weights)
         inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                  bn_trainable=bn_trainable)
 
@@ -247,7 +254,7 @@ def bottleneck_block(inputs, filters, is_training, strides,
         inputs = conv2d_fixed_padding(
                 inputs=inputs, filters=4 * filters, kernel_size=1, strides=1,
                 alignment=alignment, alignment_relu=use_relu,
-                tf_layers=tf_layers)
+                tf_layers=tf_layers, regularize_weights=regularize_weights)
         inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                  init_zero=True, bn_trainable=bn_trainable)
 
@@ -256,7 +263,7 @@ def bottleneck_block(inputs, filters, is_training, strides,
 
 def block_group(inputs, filters, block_fn, blocks, strides, is_training, name,
                 alignment=None, tf_layers=False, endpoints=None,
-                bn_trainable=True):
+                bn_trainable=True, regularize_weights=True):
     """Creates one group of blocks for the ResNet model.
 
     Args:
@@ -276,7 +283,8 @@ def block_group(inputs, filters, block_fn, blocks, strides, is_training, name,
     with tf.variable_scope(name + "_{}".format(0)):
         inputs = block_fn(inputs, filters, is_training, strides,
                           use_projection=True, alignment=alignment,
-                          tf_layers=tf_layers, bn_trainable=bn_trainable)
+                          tf_layers=tf_layers, bn_trainable=bn_trainable,
+                          regularize_weights=regularize_weights)
 
         if endpoints is not None:
             endpoints[name + '_' + str(0)] = inputs
@@ -285,7 +293,8 @@ def block_group(inputs, filters, block_fn, blocks, strides, is_training, name,
         with tf.variable_scope(name + "_{}".format(i)):
             inputs = block_fn(inputs, filters, is_training, 1,
                               alignment=alignment, tf_layers=tf_layers,
-                              bn_trainable=bn_trainable)
+                              bn_trainable=bn_trainable,
+                              regularize_weights=regularize_weights)
 
             if endpoints is not None:
                 endpoints[name + '_' + str(i)] = inputs
@@ -294,7 +303,8 @@ def block_group(inputs, filters, block_fn, blocks, strides, is_training, name,
 
 
 def resnet_v1_generator(block_fn, layers, num_classes,
-                        alignment=None, tf_layers=False, bn_trainable=True):
+                        alignment=None, tf_layers=False, bn_trainable=True,
+                        regularize_weights=True):
     """Generator for ResNet v1 models.
 
     Args:
@@ -321,7 +331,7 @@ def resnet_v1_generator(block_fn, layers, num_classes,
             inputs = conv2d_fixed_padding(
                     inputs=inputs, filters=64, kernel_size=7, strides=2,
                     alignment=alignment, alignment_relu=use_relu,
-                    tf_layers=tf_layers)
+                    tf_layers=tf_layers, regularize_weights=regularize_weights)
             inputs = tf.identity(inputs, 'initial_conv')
             inputs = batch_norm_relu(inputs, is_training, relu=use_relu,
                                      bn_trainable=bn_trainable)
@@ -334,25 +344,25 @@ def resnet_v1_generator(block_fn, layers, num_classes,
                 inputs=inputs, filters=64, block_fn=block_fn, blocks=layers[0],
                 strides=1, is_training=is_training, name='block_group1',
                 alignment=alignment, tf_layers=tf_layers, endpoints=endpoints,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable, regularize_weights=regularize_weights)
         endpoints['block_group1'] = inputs
         inputs = block_group(
                 inputs=inputs, filters=128, block_fn=block_fn, blocks=layers[1],
                 strides=2, is_training=is_training, name='block_group2',
                 alignment=alignment, tf_layers=tf_layers, endpoints=endpoints,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable, regularize_weights=regularize_weights)
         endpoints['block_group2'] = inputs
         inputs = block_group(
                 inputs=inputs, filters=256, block_fn=block_fn, blocks=layers[2],
                 strides=2, is_training=is_training, name='block_group3',
                 alignment=alignment, tf_layers=tf_layers, endpoints=endpoints,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable, regularize_weights=regularize_weights)
         endpoints['block_group3'] = inputs
         inputs = block_group(
                 inputs=inputs, filters=512, block_fn=block_fn, blocks=layers[3],
                 strides=2, is_training=is_training, name='block_group4',
                 alignment=alignment, tf_layers=tf_layers, endpoints=endpoints,
-                bn_trainable=bn_trainable)
+                bn_trainable=bn_trainable, regularize_weights=regularize_weights)
         endpoints['block_group4'] = inputs
 
         if input_width == 224:
@@ -371,21 +381,27 @@ def resnet_v1_generator(block_fn, layers, num_classes,
         inputs = tf.reshape(
                 inputs, [-1, 2048 if block_fn is bottleneck_block else 512])
         with tf.variable_scope("dense"):
+            if regularize_weights:
+                kernel_regularizer = tf.contrib.layers.l2_regularizer(1e-4)
+                bias_regularizer = tf.contrib.layers.l2_regularizer(1e-4)
+            else:
+                kernel_regularizer = None
+                bias_regularizer = None
             if tf_layers:
                 inputs = tf.layers.dense(
                         inputs=inputs,
                         units=num_classes,
                         kernel_initializer=tf.random_normal_initializer(stddev=.01),
-                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
-                        bias_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
+                        kernel_regularizer=kernel_regularizer,
+                        bias_regularizer=bias_regularizer,
                         activation=None)
             else:
                 inputs = custom_layers.Dense(
                         input=inputs,
                         units=num_classes,
                         kernel_initializer=tf.random_normal_initializer(stddev=.01),
-                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
-                        bias_regularizer=tf.contrib.layers.l2_regularizer(1e-4),
+                        kernel_regularizer=kernel_regularizer,
+                        bias_regularizer=bias_regularizer,
                         alignment=alignment,
                         activation=None)
         inputs = tf.identity(inputs, 'final_dense')
@@ -401,7 +417,7 @@ def resnet_v1_generator(block_fn, layers, num_classes,
 
 
 def resnet_v1(resnet_depth, num_classes, alignment=None, tf_layers=False,
-              bn_trainable=True):
+              bn_trainable=True, regularize_weights=True):
     """Returns the ResNet model for a given size and number of output classes."""
     model_params = {
         18: {'block': residual_block, 'layers': [2, 2, 2, 2]},
@@ -416,7 +432,9 @@ def resnet_v1(resnet_depth, num_classes, alignment=None, tf_layers=False,
         raise ValueError('Not a valid resnet_depth:', resnet_depth)
 
     print("Setting batch_normalization trainable to {}".format(bn_trainable))
+    print("Setting regularize_weights to {}".format(regularize_weights))
     params = model_params[resnet_depth]
     return resnet_v1_generator(
             params['block'], params['layers'], num_classes,
-            alignment=alignment, tf_layers=tf_layers, bn_trainable=bn_trainable)
+            alignment=alignment, tf_layers=tf_layers, bn_trainable=bn_trainable,
+            regularize_weights=regularize_weights)

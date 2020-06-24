@@ -36,7 +36,10 @@ def loss_metric(inputs, outputs, target, **kwargs):
     reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     # Adding the losses, for now, since we could not filter
     # them out per GPU
-    reg_loss = tf.add_n(reg_losses)
+    if len(reg_losses) > 0:
+        reg_loss = tf.add_n(reg_losses)
+    else:
+        reg_loss = tf.constant(0.0)
     report_dict['reg_loss'] = reg_loss
     # alignment regularization
     alignment_losses = tf.get_collection('ALIGNMENT_LOSSES')
@@ -94,7 +97,10 @@ def mean_loss_with_reg_tpu(loss, **kwargs):
     """
     model_loss = tf.reduce_mean(loss)
     # model regularization
-    reg_loss =  tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
+    if len(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)) == 0:
+        reg_loss = tf.zeros_like(model_loss)
+    else:
+        reg_loss = tf.add_n(tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES))
     # alignment regularization
     # Since we don't use filter_losses (like on GPU), explicitly set it to zero
     if len(tf.get_collection('ALIGNMENT_LOSSES')) == 0:
