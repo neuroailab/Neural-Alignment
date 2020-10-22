@@ -161,12 +161,11 @@ python test.py validate --gpu=6 --dbname=validate --port=29029 --model=resnet18 
 ## Cite
 
 ```
-@article{kunin2020routes,
-    title={Two Routes to Scalable Credit Assignment without Weight Symmetry},
-    author={Daniel Kunin and Aran Nayebi and Javier Sagastuy-Brena and Surya Ganguli and Jonathan M. Bloom and Daniel L. K. Yamins},
-    year={2020},
-    eprint={2003.01513},
-    archivePrefix={arXiv},
-    primaryClass={q-bio.NC}
+@inproceedings{tworoutes2020,
+  title={Two Routes to Scalable Credit Assignment without Weight Symmetry},
+  author={Kunin, Daniel and Nayebi, Aran and Sagastuy-Brena, Javier and Ganguli, Surya and Bloom, Jon and Yamins, Daniel LK},
+  booktitle={The 37th International Conference on Machine Learning (ICML 2020)},
+  url={https://arxiv.org/abs/2003.01513},
+  year={2020}
 }
 ```
